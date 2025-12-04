@@ -43,19 +43,31 @@ type Section = 'messages' | 'contacts' | 'calls' | 'groups' | 'profile' | 'setti
 
 const Index = () => {
   const [activeChat, setActiveChat] = useState<Chat>(chats[0]);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [chatMessages, setChatMessages] = useState<Record<number, Message[]>>({
+    1: initialMessages,
+    2: [],
+    3: [],
+    4: [],
+    5: [],
+    6: [],
+  });
   const [newMessage, setNewMessage] = useState('');
   const [activeSection, setActiveSection] = useState<Section>('messages');
+
+  const messages = chatMessages[activeChat.id] || [];
 
   const sendMessage = () => {
     if (newMessage.trim()) {
       const message: Message = {
-        id: messages.length + 1,
+        id: Date.now(),
         text: newMessage,
         time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
         sent: true,
       };
-      setMessages([...messages, message]);
+      setChatMessages({
+        ...chatMessages,
+        [activeChat.id]: [...messages, message],
+      });
       setNewMessage('');
     }
   };
@@ -89,7 +101,8 @@ const Index = () => {
         ))}
       </div>
 
-      <div className="w-96 bg-card border-r border-border flex flex-col">
+      {activeSection === 'messages' && (
+        <div className="w-96 bg-card border-r border-border flex flex-col">
         <div className="p-4 border-b border-border">
           <h2 className="text-xl font-semibold mb-3">Чаты</h2>
           <div className="relative">
@@ -137,7 +150,9 @@ const Index = () => {
           ))}
         </ScrollArea>
       </div>
+      )}
 
+      {activeSection === 'messages' ? (
       <div className="flex-1 flex flex-col bg-[hsl(var(--chat-bg))]">
         <div className="p-4 border-b border-border bg-card flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -223,6 +238,33 @@ const Index = () => {
           </div>
         </div>
       </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center bg-[hsl(var(--chat-bg))]">
+          <div className="text-center">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+              <Icon 
+                name={
+                  activeSection === 'contacts' ? 'Users' :
+                  activeSection === 'calls' ? 'Phone' :
+                  activeSection === 'groups' ? 'UsersRound' :
+                  activeSection === 'profile' ? 'User' : 'Settings'
+                } 
+                size={40} 
+                className="text-primary" 
+              />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-foreground">
+              {
+                activeSection === 'contacts' ? 'Контакты' :
+                activeSection === 'calls' ? 'Звонки' :
+                activeSection === 'groups' ? 'Группы' :
+                activeSection === 'profile' ? 'Профиль' : 'Настройки'
+              }
+            </h3>
+            <p className="text-muted-foreground">Раздел в разработке</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
